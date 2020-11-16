@@ -1,0 +1,64 @@
+FUNCTION_BLOCK
+
+VAR_INPUT
+left_distance : REAL;
+hole_distance_horizontal : REAL;
+front_distance : REAL;
+END_VAR
+
+VAR_OUTPUT
+car_turning : REAL;
+END_VAR
+
+FUZZIFY left_distance
+TERM left := (0, 0.7) (20, 0.7) (40, 0);
+TERM middle := (30,0) (40, 0.7) (60, 0.7) (70, 0);
+TERM right := (60, 0) (80, 0.7) (100, 0.7);
+END_FUZZIFY
+
+FUZZIFY hole_distance_horizontal
+TERM left := (0, 1) (35, 1) (55, 0);
+TERM middle := (40, 0) (45, 1) (55, 1) (60, 0);
+TERM right := (50, 0) (65, 1) (100, 1);
+END_FUZZIFY
+
+FUZZIFY front_distance
+TERM close := (0,1) (40, 1) (55, 0);
+TERM far := (45,0) (60, 1) (100, 1);
+END_FUZZIFY
+
+DEFUZZIFY car_turning
+TERM hard_left := (0, 1) (35, 1) (50, 0);
+TERM left := (0, 0.7) (35, 0.7) (50, 0);
+TERM stay := (35,0) (45, 0.7) (55, 0.7) (65, 0);
+TERM right := (50, 0) (65, 0.7) (100, 0.7);
+TERM hard_right := (50, 0) (65, 1) (100, 1);
+METHOD : COG;
+DEFAULT := 50.0;
+END_DEFUZZIFY
+
+RULEBLOCK first
+AND: MIN;
+ACT: MIN;
+
+RULE 0: IF hole_distance_horizontal IS left AND front_distance IS close THEN car_turning IS right;
+RULE 1: IF hole_distance_horizontal IS right AND front_distance IS close THEN car_turning IS left;
+
+RULE 2: IF left_distance IS middle AND hole_distance_horizontal IS left AND front_distance IS close THEN car_turning IS right;
+RULE 3: IF left_distance IS middle AND hole_distance_horizontal IS right AND front_distance IS close THEN car_turning IS left;
+
+RULE 4: IF left_distance IS left THEN car_turning IS right;
+RULE 5: IF left_distance IS right THEN car_turning IS left;
+
+RULE 6: IF left_distance IS middle AND front_distance IS far THEN car_turning IS stay;
+RULE 7: IF left_distance IS left AND front_distance IS far THEN car_turning IS stay;
+RULE 8: IF left_distance IS right AND front_distance IS far THEN car_turning IS stay;
+
+RULE 9: IF hole_distance_horizontal IS middle AND left_distance IS left THEN car_turning IS hard_right;
+RULE 10: IF hole_distance_horizontal IS middle AND left_distance IS right THEN car_turning IS hard_left;
+RULE 11: IF hole_distance_horizontal IS middle AND left_distance IS middle THEN car_turning IS hard_right;
+
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
